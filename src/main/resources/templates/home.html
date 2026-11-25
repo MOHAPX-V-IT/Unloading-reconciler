@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Новая сверка')}"></head>
+<body>
+<header th:replace="~{layout :: siteHeader}"></header>
+<main class="content upload-content">
+    <nav th:replace="~{layout :: progress(1)}"></nav>
+    <div class="heading">
+        <h1>Новая сверка</h1>
+        <form th:if="${demo}" th:action="@{/sample}" method="post"><button class="button subtle" type="submit">Загрузить пример</button></form>
+    </div>
+    <div th:replace="~{layout :: alerts}"></div>
+    <form class="panel pad fields" th:action="@{/upload}" method="post" enctype="multipart/form-data">
+        <div class="columns">
+            <section class="input-source">
+                <h2>Левая выгрузка</h2>
+                <div th:replace="~{layout :: dropzone('left', 'Левый файл')}"></div>
+                <details>
+                    <summary>Параметры левой выгрузки</summary>
+                    <div class="fields">
+                        <label>Строка заголовков <input name="leftHeader" type="number" value="1" min="1" max="50"></label>
+                        <label>Имя листа Excel <input name="leftSheet" maxlength="31" placeholder="Первый видимый лист"></label>
+                        <label>Разделитель CSV <select name="leftSeparator"><option value="AUTO">Автоматически</option><option value="SEMICOLON">Точка с запятой</option><option value="COMMA">Запятая</option><option value="TAB">Табуляция</option></select></label>
+                    </div>
+                </details>
+            </section>
+            <section class="input-source">
+                <h2>Правая выгрузка</h2>
+                <div th:replace="~{layout :: dropzone('right', 'Правый файл')}"></div>
+                <details>
+                    <summary>Параметры правой выгрузки</summary>
+                    <div class="fields">
+                        <label>Строка заголовков <input name="rightHeader" type="number" value="1" min="1" max="50"></label>
+                        <label>Имя листа Excel <input name="rightSheet" maxlength="31" placeholder="Первый видимый лист"></label>
+                        <label>Разделитель CSV <select name="rightSeparator"><option value="AUTO">Автоматически</option><option value="SEMICOLON">Точка с запятой</option><option value="COMMA">Запятая</option><option value="TAB">Табуляция</option></select></label>
+                    </div>
+                </details>
+            </section>
+        </div>
+        <div class="form-foot"><p>CSV, TSV, XLS или XLSX. До 6 МБ на файл.</p><button class="button primary" type="submit">Настроить сравнение</button></div>
+    </form>
+    <section id="history" class="history">
+        <h2>История</h2>
+        <div class="panel">
+            <p th:if="${#lists.isEmpty(history.summaries)}" class="empty">Запусков на этой странице пока нет.</p>
+            <a class="history-row" th:each="run : ${history.summaries}" th:href="@{/reports/{id}(id=${run.id})}">
+                <span><strong th:text="|${run.left} / ${run.right}|">Сверка</strong><small th:text="${clock.formatTime(run.time)}"></small></span>
+                <span class="badge" th:classappend="${run.mismatches == 0 ? 'success' : 'warning'}" th:text="|Расхождения: ${run.mismatches}|">Расхождения</span>
+            </a>
+        </div>
+        <nav class="pagination" th:if="${page > 1 || history.next}" aria-label="Страницы истории">
+            <a class="button subtle" th:if="${page > 1}" th:href="@{/(page=${page-1})}">Назад</a>
+            <a class="button subtle" th:if="${history.next}" th:href="@{/(page=${page+1})}">Далее</a>
+        </nav>
+    </section>
+</main>
+<script th:src="@{/assets/upload.js}" defer></script>
+</body>
+</html>

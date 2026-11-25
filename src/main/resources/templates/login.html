@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Вход')}"></head>
+<body>
+<header th:replace="~{layout :: siteHeader}"></header>
+<main class="content login">
+    <section class="panel pad">
+        <h1>Вход</h1>
+        <p th:if="${param.error}" class="notice warn" role="alert">Проверьте логин и пароль.</p>
+        <form class="fields" th:action="@{/login}" method="post">
+            <label>Логин <input name="username" autocomplete="username" required></label>
+            <label>Пароль <input type="password" name="password" autocomplete="current-password" required></label>
+            <button class="button primary" type="submit">Войти</button>
+        </form>
+        <details th:if="${demo}">
+            <summary>Демо-доступ</summary>
+            <p><code>demo@sverka.test</code></p>
+            <p><code>DemoSverka2026!</code></p>
+        </details>
+    </section>
+</main>
+</body>
+</html>

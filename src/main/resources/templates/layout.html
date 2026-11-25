@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="|${title} · Сверка|">Сверка</title>
+    <link rel="stylesheet" th:href="@{/assets/app.css}">
+</head>
+<body>
+<header th:fragment="siteHeader" class="topbar">
+    <div class="topline">
+        <a class="brand" th:href="@{/}"><img class="brandmark" th:src="@{/assets/file-spreadsheet.svg}" width="34" height="34" alt="">Сверка</a>
+        <nav th:if="${signedIn}" aria-label="Разделы">
+            <a th:href="@{/}">Новая сверка</a>
+            <a th:href="@{/#history}">История</a>
+            <form th:action="@{/logout}" method="post"><button type="submit" class="button ghost">Выйти</button></form>
+        </nav>
+    </div>
+</header>
+<nav th:fragment="progress(stage)" class="progress" aria-label="Этапы сверки">
+    <ol>
+        <li th:classappend="${stage > 1 ? 'complete' : ''}" th:attr="aria-current=${stage == 1 ? 'step' : null}"><span aria-hidden="true">1</span> Файлы</li>
+        <li th:classappend="${stage > 2 ? 'complete' : ''}" th:attr="aria-current=${stage == 2 ? 'step' : null}"><span aria-hidden="true">2</span> Поля</li>
+        <li th:attr="aria-current=${stage == 3 ? 'step' : null}"><span aria-hidden="true">3</span> Результат</li>
+    </ol>
+</nav>
+<div th:fragment="dropzone(field, title)" class="drop-wrap" data-drop-wrap>
+    <label class="dropzone" data-dropzone>
+        <img th:src="@{/assets/upload.svg}" width="25" height="25" alt="">
+        <span class="drop-title" data-file-name>Выбрать файл</span>
+        <span class="drop-hint" data-file-hint>или перетащите сюда</span>
+        <input type="file" th:name="${field}" th:attr="aria-label=${title}" accept=".csv,.tsv,.xls,.xlsx" required>
+    </label>
+    <button type="button" data-clear-file th:attr="aria-label=|Убрать файл: ${title}|" class="button clear-file" hidden>Убрать файл</button>
+    <span data-file-status class="visually-hidden" role="status"></span>
+</div>
+<div th:fragment="alerts">
+    <p th:if="${warning}" class="notice warn" th:text="${warning}" role="alert"></p>
+    <p th:if="${notice}" class="notice" th:text="${notice}" role="status"></p>
+</div>
+</body>
+</html>

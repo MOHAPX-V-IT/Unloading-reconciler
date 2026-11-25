@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Результат')}"></head>
+<body>
+<header th:replace="~{layout :: siteHeader}"></header>
+<main class="content">
+    <nav th:replace="~{layout :: progress(3)}"></nav>
+    <a class="back" th:href="@{/#history}">← История</a>
+    <div class="heading">
+        <h1>Результат сверки</h1>
+        <a class="button primary" th:href="@{/reports/{id}/report.csv(id=${run.summary.id},filter=${filter})}">Скачать CSV</a>
+    </div>
+    <div class="pair-names">
+        <div><span>Слева</span><strong th:text="${run.summary.left}"></strong><small th:text="|Строк: ${run.report.leftRows}|"></small></div>
+        <div><span>Справа</span><strong th:text="${run.summary.right}"></strong><small th:text="|Строк: ${run.report.rightRows}|"></small></div>
+    </div>
+    <div class="results-layout">
+    <aside class="result-context" aria-label="Статистика и правила сверки">
+    <div class="stat-grid">
+        <a class="stat" th:each="state : ${states}" th:href="@{/reports/{id}(id=${run.summary.id},filter=${state.name()})}" th:attr="aria-current=${filter == state.name() ? 'page' : null}">
+            <span th:text="${state.label()}"></span><strong th:text="${run.report.count(state)}">0</strong>
+        </a>
+    </div>
+    <details class="panel pad rules">
+        <summary>Правила этой сверки</summary>
+        <p th:text="|Ключ: ${#strings.listJoin(run.report.keys, ' + ')}|"></p>
+        <ul><li th:each="field : ${run.report.compared}" th:text="${field}"></li></ul>
+        <p th:text="|Отклонение чисел: ${run.report.tolerance}|"></p>
+        <p th:text="${run.report.ignoreCase ? 'Регистр игнорируется.' : 'Регистр учитывается.'}"></p>
+    </details>
+    </aside>
+    <section class="panel report">
+        <div class="toolbar">
+            <nav class="tabs" aria-label="Статус строк">
+                <a th:href="@{/reports/{id}(id=${run.summary.id},filter='problems')}" th:attr="aria-current=${filter == 'problems' ? 'page' : null}">Расхождения</a>
+                <a th:href="@{/reports/{id}(id=${run.summary.id},filter='all')}" th:attr="aria-current=${filter == 'all' ? 'page' : null}">Все записи</a>
+            </nav>
+            <form th:action="@{/reports/{id}(id=${run.summary.id})}" method="get" class="search">
+                <input name="filter" type="hidden" th:value="${filter}">
+                <input name="q" type="search" aria-label="Поиск по ключу" placeholder="Поиск по ключу" maxlength="160" th:value="${q}">
+                <button class="button subtle" type="submit">Найти</button>
+            </form>
+        </div>
+        <p class="empty" th:if="${total == 0}">Записей по выбранным условиям нет.</p>
+        <div class="table-scroll" th:if="${total > 0}">
+            <table class="results" role="table">
+                <thead role="rowgroup"><tr role="row"><th scope="col">Ключ</th><th scope="col">Статус</th><th scope="col">Строки слева / справа</th><th scope="col">Различия</th></tr></thead>
+                <tbody role="rowgroup">
+                    <tr th:each="item : ${items}" role="row">
+                        <td role="cell"><strong th:text="${item.key.isEmpty() ? '—' : item.key}"></strong></td>
+                        <td role="cell"><span class="badge" th:classappend="${item.state.tone()}" th:text="${item.state.label()}"></span></td>
+                        <td role="cell">
+                            <span class="row-label" aria-hidden="true">Строки слева / справа</span>
+                            <span><span th:text="${item.leftRows.isEmpty() ? '—' : item.formattedLeftRows()}"></span> / <span th:text="${item.rightRows.isEmpty() ? '—' : item.formattedRightRows()}"></span></span>
+                        </td>
+                        <td role="cell">
+                            <span class="row-label" aria-hidden="true">Различия</span>
+                            <details th:unless="${item.fields.isEmpty()}">
+                                <summary th:text="|Поля: ${#lists.size(item.fields)}|"></summary>
+                                <dl class="changes" th:each="delta : ${item.fields}">
+                                    <dt th:text="${delta.field}"></dt>
+                                    <dd><span>Слева</span><strong th:text="${delta.left.isEmpty() ? 'Пусто' : delta.left}"></strong></dd>
+                                    <dd><span>Справа</span><strong th:text="${delta.right.isEmpty() ? 'Пусто' : delta.right}"></strong></dd>
+                                    <dd th:if="${delta.error}" class="muted" th:text="${delta.error}"></dd>
+                                </dl>
+                            </details>
+                            <span th:if="${item.fields.isEmpty()}">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <nav th:if="${pages > 1}" class="pagination pad" aria-label="Страницы отчёта">
+            <a class="button subtle" th:if="${page > 1}" th:href="@{/reports/{id}(id=${run.summary.id},page=${page-1},filter=${filter},q=${q})}">Назад</a>
+            <span th:text="|${page} / ${pages}|"></span>
+            <a class="button subtle" th:if="${page < pages}" th:href="@{/reports/{id}(id=${run.summary.id},page=${page+1},filter=${filter},q=${q})}">Далее</a>
+        </nav>
+    </section>
+    </div>
+    <details class="remove">
+        <summary>Удалить отчёт</summary>
+        <form th:action="@{/reports/{id}/delete(id=${run.summary.id})}" method="post">
+            <p>Отчёт будет удалён из истории.</p>
+            <button class="button danger" type="submit">Удалить из истории</button>
+        </form>
+    </details>
+</main>
+</body>
+</html>

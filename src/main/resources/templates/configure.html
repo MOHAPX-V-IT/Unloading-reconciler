@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Настройка')}"></head>
+<body>
+<header th:replace="~{layout :: siteHeader}"></header>
+<main class="content">
+    <nav th:replace="~{layout :: progress(2)}"></nav>
+    <a class="back" th:href="@{/}">← Загрузить другие файлы</a>
+    <h1>Настройка сравнения</h1>
+    <div th:replace="~{layout :: alerts}"></div>
+    <div class="mapping-layout">
+    <aside class="preview" aria-label="Предпросмотр исходных выгрузок">
+        <section class="panel pad" th:each="table : ${previews}">
+            <h2 th:text="${table.name}"></h2>
+            <p class="muted" th:text="|${table.source} · Строк: ${#lists.size(table.rows)}|"></p>
+            <p th:if="${table.cachedFormulas > 0}" class="muted" th:text="|Формулы: ${table.cachedFormulas}. Использованы результаты, сохранённые в файле.|"></p>
+            <details>
+                <summary>Показать первые пять строк</summary>
+                <div class="table-scroll">
+                    <table>
+                        <thead><tr><th>№</th><th th:each="header : ${table.headers}" th:text="${header}"></th></tr></thead>
+                        <tbody>
+                            <tr th:each="row : ${table.preview()}">
+                                <td th:text="${row.number}"></td><td th:each="cell : ${row.cells}" th:text="${cell}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+    </aside>
+    <form th:action="@{/compare}" method="post" class="panel pad fields">
+        <input type="hidden" name="pairId" th:value="${draft.id}">
+        <section class="fields">
+            <div><h2>Ключ строки</h2><p class="muted">Выберите поля, по которым две строки относятся к одной записи.</p></div>
+            <div class="columns">
+                <label>Ключ слева <select name="leftKey"><option th:each="column, stat : ${draft.pair.left.headers}" th:value="${stat.index}" th:selected="${options.leftKey == stat.index.toString()}" th:text="${column}"></option></select></label>
+                <label>Ключ справа <select name="rightKey"><option th:each="column, stat : ${draft.pair.right.headers}" th:value="${stat.index}" th:selected="${options.rightKey == stat.index.toString()}" th:text="${column}"></option></select></label>
+            </div>
+            <details th:open="${!options.leftExtra.isEmpty() || !options.rightExtra.isEmpty()}">
+                <summary>Составной ключ</summary>
+                <div class="columns">
+                    <label>Дополнительное поле слева <select name="leftExtra"><option value="">Выбрать столбец</option><option th:each="column, stat : ${draft.pair.left.headers}" th:value="${stat.index}" th:selected="${options.leftExtra == stat.index.toString()}" th:text="${column}"></option></select></label>
+                    <label>Дополнительное поле справа <select name="rightExtra"><option value="">Выбрать столбец</option><option th:each="column, stat : ${draft.pair.right.headers}" th:value="${stat.index}" th:selected="${options.rightExtra == stat.index.toString()}" th:text="${column}"></option></select></label>
+                </div>
+            </details>
+        </section>
+        <section class="field-section">
+            <h2>Поля для сравнения</h2>
+            <p class="muted">Оставьте пару пустой, если поле не нужно сравнивать.</p>
+            <div class="field-line" th:each="pick, row : ${options.fields}">
+                <label>Поле слева <select name="leftField" th:attr="aria-label=|Поле слева ${row.count}|"><option value="">Выбрать</option><option th:each="column, stat : ${draft.pair.left.headers}" th:value="${stat.index}" th:selected="${pick.left == stat.index.toString()}" th:text="${column}"></option></select></label>
+                <label>Поле справа <select name="rightField" th:attr="aria-label=|Поле справа ${row.count}|"><option value="">Выбрать</option><option th:each="column, stat : ${draft.pair.right.headers}" th:value="${stat.index}" th:selected="${pick.right == stat.index.toString()}" th:text="${column}"></option></select></label>
+                <label>Режим <select name="fieldType" th:attr="aria-label=|Режим ${row.count}|"><option th:each="type : ${types}" th:value="${type.name()}" th:selected="${type.name() == pick.type}" th:text="${type.label()}"></option></select></label>
+            </div>
+        </section>
+        <div class="columns">
+            <label>Допустимое отклонение чисел <input name="tolerance" th:value="${options.tolerance}" maxlength="40" inputmode="decimal" placeholder="0,01"></label>
+            <label class="check"><input type="checkbox" name="ignoreCase" value="true" th:checked="${options.ignoreCase}"> Игнорировать регистр текста</label>
+        </div>
+        <div class="actions"><button class="button primary" type="submit">Сравнить выгрузки</button></div>
+    </form>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,8 @@
+/target/
+/data/
+/.run/
+.env
+.env.*
+*.log
+*.iml
+/.idea/
